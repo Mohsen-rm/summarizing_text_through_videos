@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Summarizing Text Through Videos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <style type="text/css">
+        body {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container bootstrap snippets bootdey">
+        <div class="row">
+            <div class="container">
+                <div class="row mt-2 justify-content-center">
+                    <div class="col-md-6">
+                        <div class="card border-0">
+                            <div class="card-body pt-2 pb-0 d-flex flex-column align-items-center justify-content-center">
+                                <img src="static/logo.jpg" style="width: 100px; height: 100px;" class="img-fluid mb-2" alt="Your Image">
+                                <p class="text-center mb-0">By Mohsen Al Jiashi</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+                    
+            <div class="col-lg-6 col-lg-offset-3">
+                <label for>Put the video link here</label>
+            </div>
+            <div class="input-group col-lg-6 col-lg-offset-3">
+                <input type="text" class="form-control" id="cyrillic-input">
+                <span class="input-group-btn">
+                    <button class="btn-primary mb-3" id="go-btn" type="button">Get!</button>
+                </span>
+            </div>
+
+            <br>
+
+        
+            <div class="container">
+                <div class="row mt-5 justify-content-center">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <button type="button" class="btn btn-primary mb-3" id="btn_translate">ترجمة</button>
+                                <button type="button" class="btn btn-primary mb-3" id="btn_summarize_text">تلخيص النص</button>
+                                <button type="button" class="btn btn-primary mb-3" id="btn_extract_topics">أستخراج المواضيع</button>
+                                <button type="button" class="btn btn-primary mb-3" id="btn_txt_to_audio">تحويل النص المترجم الى صوت</button>
+                                <!-- <button type="button" class="btn btn-primary mb-3">Button 5</button> -->
+                                <p id="translated-text" class="card-text"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>    
+            
+            
+            <div class="container">              
+                <!-- Columns are always 50% wide, on mobile and desktop -->
+                <div class="row">
+                  <div class="col-6">
+                    <h4 id="utf-result">result EN: </h4>
+                  </div>
+                  <div class="col-6">
+                    <div class="col-6" id="box_result"></div>
+                    <h4 id="utf-result_lang">result AR:</h4>
+                  </div>
+                </div>
+              </div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+    <script src="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+
+        function generateRandomKey(length) {
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let key = '';
+            for (let i = 0; i < length; i++) {
+                const randomIndex = Math.floor(Math.random() * characters.length);
+                key += characters.charAt(randomIndex);
+            }
+            return key;
+        }
+
+        let intervalId; // Variable to store the interval ID
+        var UKey = generateRandomKey(10);
+
+
+        function myFunction() {
+          console.log("Function executed!");
+          $.get("http://127.0.0.1:5000/getDataTxt?key="+UKey, function(data, status){
+            if (data.is_finished) {
+              // Process the text data
+              var textData = data.utext;
+              console.log("Text data:", textData);
+              // Add your code here to handle the text data
+               $('#utf-result').text(textData);
+            } else {
+              // Process other cases if needed
+              console.log("Process is not finished.");
+            }
+
+          });
+        }
+
+        // Function to start the interval
+        function startInterval() {
+          // Call the function initially
+          myFunction();
+
+          // Call the function every 10 seconds
+          intervalId = setInterval(myFunction, 20000); // 10000 milliseconds = 10 seconds
+        }
+
+        // Function to stop the interval
+        function stopInterval() {
+          clearInterval(intervalId); // Stop the interval timer
+        }
+
+        $('#btn_txt_to_audio').click(function(){
+            var resultText = $("#utf-result").text();
+            $.get("http://127.0.0.1:5000/Text_to_audio?key="+UKey+"&text="+resultText, function(data, status){
+            if (data.is_finished) {
+              // Process the text data
+              var textData = data.utext;
+              console.log("Text data:", textData);
+              // Add your code here to handle the text data
+               $('#box_result').html(textData);
+            } else {
+              // Process other cases if needed
+              console.log("Process is not finished.");
+            }
+          });
+        });
+
+        $('#btn_extract_topics').click(function(){
+            var resultText = $("#utf-result").text();
+            $.get("http://127.0.0.1:5000/Extract_topics?text="+resultText, function(data, status){
+            if (data.is_finished) {
+              // Process the text data
+              var textData = data.utext;
+              console.log("Text data:", textData);
+              // Add your code here to handle the text data
+               $('#utf-result_lang').text(textData);
+            } else {
+              // Process other cases if needed
+              console.log("Process is not finished.");
+            }
+          });
+        });
+
+        $('#btn_summarize_text').click(function(){
+            var resultText = $("#utf-result").text();
+            $.get("http://127.0.0.1:5000/Summarize_text?text="+resultText, function(data, status){
+            if (data.is_finished) {
+              // Process the text data
+              var textData = data.utext;
+              console.log("Text data:", textData);
+              // Add your code here to handle the text data
+               $('#utf-result_lang').text(textData);
+            } else {
+              // Process other cases if needed
+              console.log("Process is not finished.");
+            }
+          });
+        });
+
+        $('#btn_translate').click(function(){
+            var resultText = $("#utf-result").text();
+            $.get("http://127.0.0.1:5000/Translator?text="+resultText, function(data, status){
+            if (data.is_finished) {
+              // Process the text data
+              var textData = data.utext;
+              console.log("Text data:", textData);
+              // Add your code here to handle the text data
+               $('#utf-result_lang').text(textData);
+            } else {
+              // Process other cases if needed
+              console.log("Process is not finished.");
+            }
+          });
+        });
+
+        $('#go-btn').click(function() {
+            var btn = $(this);
+            var input = $("#cyrillic-input").val();
+
+            // Example usage:
+            UKey = generateRandomKey(10); // Generates a random key of length 10
+            console.log(UKey);
+
+
+        $.post("http://127.0.0.1:5000/",
+                {
+                    ukey: UKey,
+                    url: input
+                },
+                function(data, status){
+                    //alert("Data: " + data + "\nStatus: " + status);
+                }
+            );
+
+            startInterval();
+
+            input = encodeURIComponent(input);
+
+            var utf = input.replace(new RegExp("%", 'g'), "0x");
+
+            $('#utf-result').text("Go run");
+
+        });
+    </script>
+</body>
+
+</html>
